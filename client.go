@@ -104,6 +104,14 @@ type SpecificMatch struct {
 	}
 }
 
+// UserIDToUserName includes conversions from User ID to UserName.
+type UserIDToUserName []struct {
+	UID      int    `json:"uid"`
+	UserName string `json:"username"`
+	Platform string `json:"platform"`
+	Game     string `json:"game"`
+}
+
 // UserStats includes all stats returned by API.
 type UserStats struct {
 	Identifier string `json:"identifier"`
@@ -292,6 +300,29 @@ func (a *API) GetSpecificMatch(mid string) (*SpecificMatch, error) {
 	err = a.Do(req, &match)
 
 	return &match, err
+}
+
+// GetUserNames gets usernames from user IDs.
+func (a *API) GetUserNames(uids ...int) (*UserIDToUserName, error) {
+	endpoint := "users/ids?"
+	num := 1
+	for _, uid := range uids {
+		if num > 1 {
+			endpoint += "&"
+		}
+		endpoint += "id=" + strconv.Itoa(uid)
+		num++
+	}
+	req, err := a.NewRequest(endpoint)
+
+	if err != nil {
+		return &UserIDToUserName{}, err
+	}
+
+	var users UserIDToUserName
+	err = a.Do(req, &users)
+
+	return &users, err
 }
 
 // GetUserStats gets all user stats.
