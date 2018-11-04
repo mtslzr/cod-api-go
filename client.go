@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/kr/pretty"
@@ -17,6 +18,48 @@ type API struct {
 	Game     string
 	Platform string
 	UserName string
+}
+
+// RecentMatches includes recent match data from API.
+type RecentMatches struct {
+	Success  bool   `json:"success"`
+	Rows     int    `json:"rows"`
+	Game     string `json:"game"`
+	Platform string `json:"platform"`
+	Entries  []struct {
+		MID       string `json:"mid"`
+		UTCStart  int    `json:"utcStart"`
+		UTCEnd    int    `json:"utcEnd"`
+		MatchInfo struct {
+			MatchDuration int    `json:"matchDuration"`
+			MatchType     string `json:"matchType"`
+			MatchMapID    string `json:"matchMapId"`
+			MatchMode     string `json:"matchMode"`
+		} `json:"matchInfo"`
+		Teams struct {
+			TeamScore struct {
+				Team1 int `json:"team1"`
+				Team2 int `json:"team2"`
+			}
+			WinningTeam int `json:"winningTeam"`
+		} `json:"teams"`
+		PlayerEntries []struct {
+			UID               int `json:"uid"`
+			Prestige          int `json:"prestige"`
+			Rank              int `json:"rank"`
+			Team              int `json:"team"`
+			Position          int `json:"position"`
+			Kills             int `json:"kills"`
+			Deaths            int `json:"deaths"`
+			EKIA              int `json:"ekia"`
+			HighestKillStreak int `json:"highestkillstreak"`
+			Assists           int `json:"assists"`
+			Headshots         int `json:"headshots"`
+			ShotsFired        int `json:"shotsfired"`
+			ShotsLanded       int `json:"shotslanded"`
+			ShotsMissed       int `json:"shotsmissed"`
+		} `json:"playerEntries"`
+	}
 }
 
 // UserStats includes all stats returned by API.
@@ -177,6 +220,21 @@ func (a *API) Do(req *http.Request, i interface{}) error {
 	fmt.Printf("%# v", pretty.Formatter(string(body)))
 
 	return json.Unmarshal(body, &i)
+}
+
+// GetRecentMatches gets recent match data.
+func (a *API) GetRecentMatches(rows int) (*RecentMatches, error) {
+	endpoint := "matches/recent?rows=" + strconv.Itoa(rows)
+	req, err := a.NewRequest(endpoint)
+
+	if err != nil {
+		return &RecentMatches{}, err
+	}
+
+	var matches RecentMatches
+	err = a.Do(req, &matches)
+
+	return &matches, err
 }
 
 // GetUserStats gets all user stats.
