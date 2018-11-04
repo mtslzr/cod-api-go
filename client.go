@@ -2,10 +2,13 @@ package cod
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/kr/pretty"
 )
 
 // API holds configuration variables for accessing the API.
@@ -16,11 +19,110 @@ type API struct {
 	UserName string
 }
 
-// Validation returns a user ID and status for game/platform/username comvbination.
+// UserStats includes all stats returned by API.
+type UserStats struct {
+	Identifier string `json:"identifier"`
+	Type       string `json:"type"`
+	User       struct {
+		ID       int    `json:"id"`
+		UserName string `json:"username"`
+		Platform string `json:"platform"`
+		Title    string `json:"title"`
+		Avatar   string `json:"avatar"`
+	} `json:"user"`
+	Cache struct {
+		Time     int `json:"time"`
+		Expire   int `json:"expire"`
+		Interval int `json:"interval"`
+	} `json:"cache"`
+	Stats struct {
+		Level             int    `json:"level"`
+		MaxLevel          int    `json:"maxlevel"`
+		Prestige          int    `json:"prestige"`
+		PrestigeID        int    `json:"prestigeid"`
+		MaxPrestige       int    `json:"maxprestige"`
+		Kills             int    `json:"kills"`
+		KillsConfirmed    int    `json:"killsconfirmed"`
+		Deaths            int    `json:"deaths"`
+		GamesPlayed       int    `json:"gamesplayed"`
+		Wins              int    `json:"wins"`
+		Losses            int    `json:"losses"`
+		Melee             int    `json:"melee"`
+		Hits              int    `json:"hits"`
+		Misses            int    `json:"misses"`
+		RankXP            int    `json:"rankxp"`
+		CareerScore       int    `json:"careerscore"`
+		TotalHeals        int    `json:"totalheals"`
+		EKIA              int    `json:"ekia"`
+		LongestKillStreak int    `json:"longestkillstreak"`
+		CurWinStreak      int    `json:"curwinstreak"`
+		TotalShots        int    `json:"totalshots"`
+		TeamKills         int    `json:"teamkills"`
+		Suicides          int    `json:"suicides"`
+		OffEnds           int    `json:"offends"`
+		KillsDenied       int    `json:"killsdenied"`
+		Captures          int    `json:"captures"`
+		Defends           int    `json:"defends"`
+		TimePlayed        int    `json:"timeplayed"`
+		WeaponData        string `json:"weapondata"`
+	} `json:"stats"`
+	Matches []struct {
+		Identifier  string `json:"identifier"`
+		Kills       int    `json:"kills"`
+		Deaths      int    `json:"deaths"`
+		EKIA        int    `json:"ekia"`
+		GamesPlayed int    `json:"gamesplayed"`
+		Wins        int    `json:"wins"`
+		Losses      int    `json:"losses"`
+		TotalShots  int    `json:"totalshots"`
+		Captures    int    `json:"captures"`
+		Defends     int    `json:"defends"`
+		CareerScore int    `json:"careerscore"`
+		TimePlayed  int    `json:"timeplayed"`
+		RankXP      int    `json:"rankxp"`
+		Time        int    `json:"time"`
+		Format      string `json:"format"`
+	} `json:"matches"`
+	LastMatch struct {
+		Identifier  string `json:"identifier"`
+		Kills       int    `json:"kills"`
+		Deaths      int    `json:"deaths"`
+		EKIA        int    `json:"ekia"`
+		GamesPlayed int    `json:"gamesplayed"`
+		Wins        int    `json:"wins"`
+		Losses      int    `json:"losses"`
+		TotalShots  int    `json:"totalshots"`
+		Captures    int    `json:"captures"`
+		Defends     int    `json:"defends"`
+		CareerScore int    `json:"careerscore"`
+		TimesPlayed int    `json:"timesplayed"`
+		Time        int    `json:"time"`
+		Format      string `json:"format"`
+	} `json:"lastmatch"`
+	WeaponData []struct {
+		Identifier      string `json:"identifier"`
+		Name            string `json:"name"`
+		Kills           int    `json:"kills"`
+		BackstabberKill int    `json:"backstabberkills"`
+		Deaths          int    `json:"deaths"`
+		TimesUsed       int    `json:"timesused"`
+		Used            int    `json:"used"`
+		DeathsDuringUse int    `json:"deathsduringuse"`
+		Hits            int    `json:"hits"`
+		EKIA            int    `json:"ekia"`
+		Destroyed       int    `json:"destroyed"`
+		Headshots       int    `json:"headshots"`
+		Shots           int    `json:"shots"`
+		Assists         int    `json:"assists"`
+		DamageDone      int    `json:"damagedone"`
+	} `json:"weapondata"`
+}
+
+// Validation returns a user ID and status for game/platform/username combination.
 type Validation struct {
-	ID       int
-	Success  bool
-	UserName string
+	ID       int    `json:"id"`
+	Success  bool   `json:"success"`
+	UserName string `json:"username"`
 }
 
 // New creates a new API client.
@@ -72,8 +174,24 @@ func (a *API) Do(req *http.Request, i interface{}) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("%# v", pretty.Formatter(string(body)))
 
 	return json.Unmarshal(body, &i)
+}
+
+// GetUserStats gets all user stats.
+func (a *API) GetUserStats(matchType string) (*UserStats, error) {
+	endpoint := "stats/" + a.Game + "/" + url.QueryEscape(a.UserName) + "/" + a.Platform + "?type=" + matchType
+	req, err := a.NewRequest(endpoint)
+
+	if err != nil {
+		return &UserStats{}, err
+	}
+
+	var stats UserStats
+	err = a.Do(req, &stats)
+
+	return &stats, err
 }
 
 // ValidateUser checks if game/user/platform combination exists.
