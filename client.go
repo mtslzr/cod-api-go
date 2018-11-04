@@ -62,6 +62,48 @@ type RecentMatches struct {
 	}
 }
 
+// SpecificMatch includes recent single match data from API.
+type SpecificMatch struct {
+	Success  bool   `json:"success"`
+	Rows     int    `json:"rows"`
+	Game     string `json:"game"`
+	Platform string `json:"platform"`
+	Entry    struct {
+		MID       string `json:"mid"`
+		UTCStart  int    `json:"utcStart"`
+		UTCEnd    int    `json:"utcEnd"`
+		MatchInfo struct {
+			MatchDuration int    `json:"matchDuration"`
+			MatchType     string `json:"matchType"`
+			MatchMapID    string `json:"matchMapId"`
+			MatchMode     string `json:"matchMode"`
+		} `json:"matchInfo"`
+		Teams struct {
+			TeamScore struct {
+				Team1 int `json:"team1"`
+				Team2 int `json:"team2"`
+			}
+			WinningTeam int `json:"winningTeam"`
+		} `json:"teams"`
+		PlayerEntries []struct {
+			UID               int `json:"uid"`
+			Prestige          int `json:"prestige"`
+			Rank              int `json:"rank"`
+			Team              int `json:"team"`
+			Position          int `json:"position"`
+			Kills             int `json:"kills"`
+			Deaths            int `json:"deaths"`
+			EKIA              int `json:"ekia"`
+			HighestKillStreak int `json:"highestkillstreak"`
+			Assists           int `json:"assists"`
+			Headshots         int `json:"headshots"`
+			ShotsFired        int `json:"shotsfired"`
+			ShotsLanded       int `json:"shotslanded"`
+			ShotsMissed       int `json:"shotsmissed"`
+		} `json:"playerEntries"`
+	}
+}
+
 // UserStats includes all stats returned by API.
 type UserStats struct {
 	Identifier string `json:"identifier"`
@@ -235,6 +277,21 @@ func (a *API) GetRecentMatches(rows int) (*RecentMatches, error) {
 	err = a.Do(req, &matches)
 
 	return &matches, err
+}
+
+// GetSpecificMatch gets recent match data.
+func (a *API) GetSpecificMatch(mid string) (*SpecificMatch, error) {
+	endpoint := "matches/get?mid=" + mid
+	req, err := a.NewRequest(endpoint)
+
+	if err != nil {
+		return &SpecificMatch{}, err
+	}
+
+	var match SpecificMatch
+	err = a.Do(req, &match)
+
+	return &match, err
 }
 
 // GetUserStats gets all user stats.
