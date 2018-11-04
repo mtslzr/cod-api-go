@@ -68,12 +68,14 @@ _USERID can be one (more more) User IDs to search; results will show user for ea
 data, err := client.GetLeaderboard("SCOPE", NUMPLAYERS)
 ```
 
-_SCOPE is which leaderboard you'd like to return (kills, deaths, ekia, wins, losses, gamesplayed, timeplayed). NUMPLAYERS is the number of players between 1 and 100._
+_SCOPE is which leaderboard you'd like to return (kills, deaths, ekia, wins, losses, gamesplayed, timeplayed)._
+_NUMPLAYERS is the number of players between 1 and 100._
 
 ## To Do
 
 * Add Unit Tests for each endpoint.
 * Add validation for variables being passed to API struct and each endpoint.
+* Either adjust API variables or allow game/platform/username to be passed in other calls.
 
 ## Credits
 
