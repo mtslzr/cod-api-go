@@ -2,14 +2,11 @@ package cod
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 // API holds configuration variables for accessing the API.
@@ -293,7 +290,6 @@ func (a *API) Do(req *http.Request, i interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%# v", pretty.Formatter(string(body)))
 
 	return json.Unmarshal(body, &i)
 }
