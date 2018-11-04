@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// API holds configuration variables for accessing the API.
+// API returns stored user data for use in API calls.
 type API struct {
 	BaseURL  *url.URL
 	Game     string
@@ -17,7 +17,7 @@ type API struct {
 	UserName string
 }
 
-// Leaderboard includes the top users for a specific set of statistics.
+// Leaderboard returns a list of best users by platform and scope.
 type Leaderboard struct {
 	Rows     int    `json:"rows"`
 	Platform string `json:"platform"`
@@ -43,7 +43,7 @@ type Leaderboard struct {
 	} `json:"entries"`
 }
 
-// RecentMatches includes recent match data from API.
+// RecentMatches returns a list of recently-played matches.
 type RecentMatches struct {
 	Success  bool   `json:"success"`
 	Rows     int    `json:"rows"`
@@ -85,7 +85,7 @@ type RecentMatches struct {
 	}
 }
 
-// SpecificMatch includes recent single match data from API.
+// SpecificMatch returns a single recently-played match.
 type SpecificMatch struct {
 	Success  bool   `json:"success"`
 	Rows     int    `json:"rows"`
@@ -127,7 +127,7 @@ type SpecificMatch struct {
 	}
 }
 
-// UserIDToUserName includes conversions from User ID to UserName.
+// UserIDToUserName returns a list of users.
 type UserIDToUserName []struct {
 	UID      int    `json:"uid"`
 	UserName string `json:"username"`
@@ -135,7 +135,7 @@ type UserIDToUserName []struct {
 	Game     string `json:"game"`
 }
 
-// UserStats includes all stats returned by API.
+// UserStats returns a bunch of stats for a specific user.
 type UserStats struct {
 	Identifier string `json:"identifier"`
 	Type       string `json:"type"`
@@ -234,14 +234,14 @@ type UserStats struct {
 	} `json:"weapondata"`
 }
 
-// Validation returns a user ID and status for game/platform/username combination.
+// Validation returns information about a single user.
 type Validation struct {
 	ID       int    `json:"id"`
 	Success  bool   `json:"success"`
 	UserName string `json:"username"`
 }
 
-// New creates a new API client.
+// New initializes the API object and sets some variables.
 func New(game string, platform string, username string) (*API, error) {
 	base, err := url.Parse("https://cod-api.theapinetwork.com/api/")
 	if err != nil {
@@ -256,7 +256,7 @@ func New(game string, platform string, username string) (*API, error) {
 	}, nil
 }
 
-// NewRequest creates the GET request to access the API.
+// NewRequest builds the GET request and URL for the API call.
 func (a *API) NewRequest(endpoint string) (*http.Request, error) {
 	end, err := url.Parse(endpoint)
 	if err != nil {
@@ -274,7 +274,7 @@ func (a *API) NewRequest(endpoint string) (*http.Request, error) {
 	return req, nil
 }
 
-// Do sends out a request to the API and unmarshals the data.
+// Do runs the request against the API and returns JSON data.
 func (a *API) Do(req *http.Request, i interface{}) error {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -294,7 +294,7 @@ func (a *API) Do(req *http.Request, i interface{}) error {
 	return json.Unmarshal(body, &i)
 }
 
-// GetLeaderboard gets recent match data.
+// GetLeaderboard queries the API for the best users in a specific scope.
 func (a *API) GetLeaderboard(scope string, rows int) (*Leaderboard, error) {
 	endpoint := "leaderboard/" + a.Game + "/" + a.Platform + "/" + scope + "?rows=" + strconv.Itoa(rows)
 	req, err := a.NewRequest(endpoint)
@@ -309,7 +309,7 @@ func (a *API) GetLeaderboard(scope string, rows int) (*Leaderboard, error) {
 	return &board, err
 }
 
-// GetRecentMatches gets recent match data.
+// GetRecentMatches queries the API for recently-played matches.
 func (a *API) GetRecentMatches(rows int) (*RecentMatches, error) {
 	endpoint := "matches/recent?rows=" + strconv.Itoa(rows)
 	req, err := a.NewRequest(endpoint)
@@ -324,7 +324,7 @@ func (a *API) GetRecentMatches(rows int) (*RecentMatches, error) {
 	return &matches, err
 }
 
-// GetSpecificMatch gets recent match data.
+// GetSpecificMatch queries the API for a single recently-played match.
 func (a *API) GetSpecificMatch(mid string) (*SpecificMatch, error) {
 	endpoint := "matches/get?mid=" + mid
 	req, err := a.NewRequest(endpoint)
@@ -339,7 +339,7 @@ func (a *API) GetSpecificMatch(mid string) (*SpecificMatch, error) {
 	return &match, err
 }
 
-// GetUserNames gets usernames from user IDs.
+// GetUserNames queries the API for users matching specific ID(s).
 func (a *API) GetUserNames(uids ...int) (*UserIDToUserName, error) {
 	endpoint := "users/ids?"
 	num := 1
@@ -362,7 +362,7 @@ func (a *API) GetUserNames(uids ...int) (*UserIDToUserName, error) {
 	return &users, err
 }
 
-// GetUserStats gets all user stats.
+// GetUserStats queries the API for all stats for a specific user.
 func (a *API) GetUserStats(matchType string) (*UserStats, error) {
 	endpoint := "stats/" + a.Game + "/" + url.QueryEscape(a.UserName) + "/" + a.Platform + "?type=" + matchType
 	req, err := a.NewRequest(endpoint)
@@ -377,7 +377,7 @@ func (a *API) GetUserStats(matchType string) (*UserStats, error) {
 	return &stats, err
 }
 
-// ValidateUser checks if game/user/platform combination exists.
+// ValidateUser queries the API to check if a user exists.
 func (a *API) ValidateUser() (*Validation, error) {
 	endpoint := "validate/" + a.Game + "/" + url.QueryEscape(a.UserName) + "/" + a.Platform
 	req, err := a.NewRequest(endpoint)
