@@ -20,6 +20,32 @@ type API struct {
 	UserName string
 }
 
+// Leaderboard includes the top users for a specific set of statistics.
+type Leaderboard struct {
+	Rows     int    `json:"rows"`
+	Platform string `json:"platform"`
+	Scope    string `json:"scope"`
+	Entries  []struct {
+		UserName string `json:"username"`
+		Platform string `json:"platform"`
+		Level    struct {
+			ID    int    `json:"id"`
+			Image string `json:"image"`
+		} `json:"level"`
+		Prestige struct {
+			ID    int    `json:"id"`
+			Image string `json:"image"`
+		} `json:"prestige"`
+		Kills       int `json:"kills"`
+		Deaths      int `json:"deaths"`
+		EKIA        int `json:"ekia"`
+		Wins        int `json:"wins"`
+		Losses      int `json:"losses"`
+		GamesPlayed int `json:"gamesplayed"`
+		TimePlayed  int `json:"timeplayed"`
+	} `json:"entries"`
+}
+
 // RecentMatches includes recent match data from API.
 type RecentMatches struct {
 	Success  bool   `json:"success"`
@@ -270,6 +296,21 @@ func (a *API) Do(req *http.Request, i interface{}) error {
 	fmt.Printf("%# v", pretty.Formatter(string(body)))
 
 	return json.Unmarshal(body, &i)
+}
+
+// GetLeaderboard gets recent match data.
+func (a *API) GetLeaderboard(scope string, rows int) (*Leaderboard, error) {
+	endpoint := "leaderboard/" + a.Game + "/" + a.Platform + "/" + scope + "?rows=" + strconv.Itoa(rows)
+	req, err := a.NewRequest(endpoint)
+
+	if err != nil {
+		return &Leaderboard{}, err
+	}
+
+	var board Leaderboard
+	err = a.Do(req, &board)
+
+	return &board, err
 }
 
 // GetRecentMatches gets recent match data.
