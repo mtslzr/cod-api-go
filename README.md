@@ -1,5 +1,7 @@
 # Call of Duty Tracker API (Go)
 
+**NOTICE: This project has been archived. It was a pet project for learning Go, and the source of the API is now gone.**
+
 Wrapper for [Call of Duty Tracker's API](https://callofdutytracker.com/site-api), written in Go.
 
 ## Installation
